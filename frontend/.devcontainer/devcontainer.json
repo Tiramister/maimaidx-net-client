@@ -13,5 +13,16 @@
 			"version": "lts",
 			"nodeGypDependencies": true
 		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Vue.volar",
+				"esbenp.prettier-vscode"
+			],
+			"settings": {
+				"editor.defaultFormatter": "esbenp.prettier-vscode"
+			}
+		}
 	}
 }
