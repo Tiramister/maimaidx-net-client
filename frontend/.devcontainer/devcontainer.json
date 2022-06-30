@@ -6,7 +6,7 @@
 			"VARIANT": "ubuntu-22.04"
 		}
 	},
-	"postCreateCommand": "pip3 install -U Commitizen",
+	"postCreateCommand": "./.devcontainer/postCreateCommand.sh",
 	"remoteUser": "vscode",
 	"features": {
 		"node": {
