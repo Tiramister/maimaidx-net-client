@@ -9,9 +9,9 @@
 	"postCreateCommand": "pip3 install -U Commitizen",
 	"remoteUser": "vscode",
 	"features": {
-		"rust": {
-			"version": "latest",
-			"profile": "default"
+		"node": {
+			"version": "lts",
+			"nodeGypDependencies": true
 		},
 		"python": "latest"
 	}
