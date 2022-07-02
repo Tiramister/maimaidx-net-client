@@ -1,7 +1,12 @@
 <template>
   <v-app>
+    <v-app-bar color="primary" density="compact">
+      <v-app-bar-title>maimaiでらっくすNET Client</v-app-bar-title>
+    </v-app-bar>
     <v-main>
-      <HelloWorld />
+      <v-container>
+        <HelloWorld />
+      </v-container>
     </v-main>
   </v-app>
 </template>
