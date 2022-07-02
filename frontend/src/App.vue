@@ -1,8 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar color="primary" density="compact">
-      <v-app-bar-title>maimaiでらっくすNET Client</v-app-bar-title>
-    </v-app-bar>
+    <CommonHeader />
     <v-main>
       <v-container>
         <HelloWorld />
@@ -14,18 +12,13 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import HelloWorld from "./components/HelloWorld.vue";
+import CommonHeader from "./components/CommonHeader.vue";
 
 export default defineComponent({
   name: "App",
-
   components: {
     HelloWorld,
-  },
-
-  data() {
-    return {
-      //
-    };
+    CommonHeader,
   },
 });
 </script>
