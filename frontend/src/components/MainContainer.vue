@@ -1,6 +1,19 @@
 <template>
   <v-container>
-    <h1>UNIMPLEMENTED</h1>
+    <v-table density="comfortable">
+      <thead>
+        <tr>
+          <th>曲名</th>
+          <th>譜面</th>
+          <th>難易度</th>
+          <th>レベル</th>
+          <th>スコア</th>
+          <th>ランク</th>
+          <th>バッジ</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </v-table>
   </v-container>
 </template>
 
