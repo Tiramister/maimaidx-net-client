@@ -19,7 +19,7 @@
           <td>{{ record.difficulty }}</td>
           <td>{{ record.level }}</td>
           <td>{{ record.score / 10000 }} %</td>
-          <td></td>
+          <td>{{ getRank(record.score) }}</td>
           <td>{{ record.badge }}</td>
         </tr>
       </tbody>
@@ -29,6 +29,33 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
+
+const rankBorders = [
+  {
+    score: 1005000,
+    rank: "SSS+",
+  },
+  {
+    score: 1000000,
+    rank: "SSS",
+  },
+  {
+    score: 995000,
+    rank: "SS+",
+  },
+  {
+    score: 990000,
+    rank: "SS",
+  },
+  {
+    score: 980000,
+    rank: "S+",
+  },
+  {
+    score: 970000,
+    rank: "S",
+  },
+];
 
 export default defineComponent({
   name: "MainContainer",
@@ -57,6 +84,14 @@ export default defineComponent({
   methods: {
     getId(record: any) {
       return record.title + "-" + record.type + "-" + record.difficulty;
+    },
+    getRank(score: number) {
+      for (const border of rankBorders) {
+        if (score >= border.score) {
+          return border.rank;
+        }
+      }
+      return "~AAA";
     },
   },
 });
