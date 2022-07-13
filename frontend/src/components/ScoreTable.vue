@@ -55,11 +55,20 @@ const rankBorders = [
   },
 ];
 
+interface Record {
+  title: string;
+  type: "ST" | "DX";
+  difficulty: "BSC" | "ADV" | "EXP" | "MAS" | "ReMAS";
+  level: string;
+  score: number;
+  badge: "" | "FC" | "FC+" | "AP" | "AP+";
+}
+
 export default defineComponent({
   name: "MainContainer",
   data() {
     return {
-      records: [
+      records: <Array<Record>>[
         {
           title: "星空パーティーチューン",
           type: "DX",
@@ -80,7 +89,7 @@ export default defineComponent({
     };
   },
   methods: {
-    getId(record: any) {
+    getId(record: Record) {
       return record.title + "-" + record.type + "-" + record.difficulty;
     },
     getRank(score: number) {
