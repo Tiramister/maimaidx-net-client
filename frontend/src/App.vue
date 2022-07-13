@@ -20,3 +20,9 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+:root {
+  font-size: 20px;
+}
+</style>
