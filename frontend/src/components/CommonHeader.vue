@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar color="primary" density="compact">
+  <v-app-bar color="primary">
     <v-app-bar-title>maimaiでらっくすNET Client</v-app-bar-title>
   </v-app-bar>
 </template>
