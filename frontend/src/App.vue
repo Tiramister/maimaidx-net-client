@@ -1,8 +1,8 @@
 <template>
   <v-app>
-    <CommonHeader />
+    <common-header />
     <v-main>
-      <MainContainer />
+      <main-container />
     </v-main>
   </v-app>
 </template>
