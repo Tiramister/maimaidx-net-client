@@ -6,7 +6,7 @@
 
 <script lang="ts">
 import { defineComponent } from "vue";
-import ScoreTable from "./ScoreTable.vue";
+import ScoreTable from "./score/ScoreTable.vue";
 
 export default defineComponent({
   name: "MainContainer",
