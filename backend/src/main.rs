@@ -1,14 +1,16 @@
 use anyhow::Result;
+use scraper::{Html, Selector};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let client = reqwest::Client::new();
-    let login_page = client
-        .get("https://maimaidx.jp/maimai-mobile/")
-        .send()
+    let login_page = reqwest::get("https://maimaidx.jp/maimai-mobile/")
         .await?
         .text()
         .await?;
-    println!("{login_page}");
+    let document = Html::parse_document(&login_page);
+    let token_selector = Selector::parse("input[name='token']").unwrap();
+    let token_element = document.select(&token_selector).next().unwrap();
+    let token = token_element.value().attr("value").unwrap();
+    println!("{token}");
     Ok(())
 }
