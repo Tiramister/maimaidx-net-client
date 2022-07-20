@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{ensure, Context, Result};
 use reqwest::{Client, ClientBuilder};
 use scraper::{Html, Selector};
 use std::env;
@@ -10,11 +10,19 @@ async fn get_login_token(client: &Client) -> Result<String> {
         .await?
         .text()
         .await?;
-    let document = Html::parse_document(&login_page);
 
+    // トークンを抽出
+    let document = Html::parse_document(&login_page);
     let token_selector = Selector::parse("input[name='token']").unwrap();
-    let token_element = document.select(&token_selector).next().unwrap();
-    let token = token_element.value().attr("value").unwrap();
+    let token_element = document
+        .select(&token_selector)
+        .next()
+        .context("There is no input element with its name 'token'.")?;
+    let token = token_element
+        .value()
+        .attr("value")
+        .context("The token element has no attribute 'value'.")?;
+
     Ok(token.to_string())
 }
 
