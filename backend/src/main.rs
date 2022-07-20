@@ -61,6 +61,36 @@ async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str)
 
     Ok(())
 }
+
+async fn select_aime(client: &Client, idx: i32) -> Result<()> {
+    let params = [("idx", idx)];
+    let response = client
+        .get("https://maimaidx.jp/maimai-mobile/aimeList/submit/")
+        .query(&params)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    // タイトルを抽出
+    let document = Html::parse_document(&response);
+    let title_selector = Selector::parse("title").unwrap();
+    let title_element = document
+        .select(&title_selector)
+        .next()
+        .context("There is no title element.")?;
+    let title = title_element
+        .text()
+        .next()
+        .context("The element has no contents.")?;
+
+    // ホーム画面であれば OK
+    ensure!(
+        title.contains("ホーム"),
+        format!("Response is not the home page, but {}.", title)
+    );
+
+    Ok(())
 }
 
 #[tokio::main]
@@ -76,6 +106,10 @@ async fn main() -> Result<()> {
     login(&client, &sega_id, &sega_password, &token)
         .await
         .context("Failed to login.")?;
+
+    select_aime(&client, 0)
+        .await
+        .context("Failed to select aime.")?;
 
     Ok(())
 }
