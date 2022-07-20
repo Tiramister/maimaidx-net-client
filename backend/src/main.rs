@@ -93,6 +93,37 @@ async fn select_aime(client: &Client, idx: i32) -> Result<()> {
     Ok(())
 }
 
+async fn get_record_page(client: &Client, difficulty: i32) -> Result<String> {
+    let params = [("genre", 99), ("diff", difficulty)];
+    let response = client
+        .get("https://maimaidx.jp/maimai-mobile/record/musicGenre/search/")
+        .query(&params)
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    // タイトルを抽出
+    let document = Html::parse_document(&response);
+    let title_selector = Selector::parse("title").unwrap();
+    let title_element = document
+        .select(&title_selector)
+        .next()
+        .context("There is no title element.")?;
+    let title = title_element
+        .text()
+        .next()
+        .context("The element has no contents.")?;
+
+    // レコード画面であれば OK
+    ensure!(
+        title.contains("楽曲スコア"),
+        format!("Response is not the home page, but {}.", title)
+    );
+
+    Ok(response)
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let client = ClientBuilder::new().cookie_store(true).build().unwrap();
@@ -110,6 +141,9 @@ async fn main() -> Result<()> {
     select_aime(&client, 0)
         .await
         .context("Failed to select aime.")?;
+
+    let master_page = get_record_page(&client, 3).await?;
+    println!("{master_page}");
 
     Ok(())
 }
