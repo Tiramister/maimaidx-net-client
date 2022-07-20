@@ -26,7 +26,7 @@ async fn get_login_token(client: &Client) -> Result<String> {
     Ok(token.to_string())
 }
 
-async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str) {
+async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str) -> Result<()> {
     let params = [
         ("segaId", sega_id),
         ("password", sega_password),
@@ -37,12 +37,30 @@ async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str)
         .post("https://maimaidx.jp/maimai-mobile/submit/")
         .form(&params)
         .send()
-        .await
-        .unwrap()
+        .await?
         .text()
-        .await
-        .unwrap();
-    println!("{response}")
+        .await?;
+
+    // タイトルを抽出
+    let document = Html::parse_document(&response);
+    let title_selector = Selector::parse("title").unwrap();
+    let title_element = document
+        .select(&title_selector)
+        .next()
+        .context("There is no title element.")?;
+    let title = title_element
+        .text()
+        .next()
+        .context("The element has no contents.")?;
+
+    // Aime 画面であれば OK
+    ensure!(
+        title.contains("Aime"),
+        format!("Response is not the Aime select page, but {}.", title)
+    );
+
+    Ok(())
+}
 }
 
 #[tokio::main]
@@ -55,7 +73,9 @@ async fn main() -> Result<()> {
     let sega_password =
         env::var("SEGA_PASSWORD").context("The environment variable SEGA_PASSWORD is not set.")?;
 
-    login(&client, &sega_id, &sega_password, &token).await;
+    login(&client, &sega_id, &sega_password, &token)
+        .await
+        .context("Failed to login.")?;
 
     Ok(())
 }
