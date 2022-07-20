@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use reqwest::Client;
+use reqwest::{Client, ClientBuilder};
 use scraper::{Html, Selector};
 use std::env;
 
@@ -18,17 +18,36 @@ async fn get_login_token(client: &Client) -> Result<String> {
     Ok(token.to_string())
 }
 
+async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str) {
+    let params = [
+        ("segaId", sega_id),
+        ("password", sega_password),
+        ("save_cookie", "on"),
+        ("token", token),
+    ];
+    let response = client
+        .post("https://maimaidx.jp/maimai-mobile/submit/")
+        .form(&params)
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+    println!("{response}")
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    let client = Client::new();
+    let client = ClientBuilder::new().cookie_store(true).build().unwrap();
 
     let token = get_login_token(&client).await?;
-    println!("{token}");
 
     let sega_id = env::var("SEGA_ID").context("The environment variable SEGA_ID is not set.")?;
     let sega_password =
         env::var("SEGA_PASSWORD").context("The environment variable SEGA_PASSWORD is not set.")?;
-    println!("{sega_id} {sega_password}");
+
+    login(&client, &sega_id, &sega_password, &token).await;
 
     Ok(())
 }
