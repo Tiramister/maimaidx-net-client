@@ -93,7 +93,7 @@ async fn select_aime(client: &Client, idx: i32) -> Result<()> {
     Ok(())
 }
 
-async fn get_record_page(client: &Client, difficulty: i32) -> Result<String> {
+async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
     let params = [("genre", 99), ("diff", difficulty)];
     let response = client
         .get("https://maimaidx.jp/maimai-mobile/record/musicGenre/search/")
@@ -121,7 +121,33 @@ async fn get_record_page(client: &Client, difficulty: i32) -> Result<String> {
         format!("Response is not the home page, but {}.", title)
     );
 
-    Ok(response)
+    let record_selector =
+        Selector::parse("form[action='https://maimaidx.jp/maimai-mobile/record/musicDetail/']")
+            .unwrap();
+    let name_selector = Selector::parse("div.music_name_block").unwrap();
+    let score_selector = Selector::parse("div.music_score_block").unwrap();
+
+    for record_element in document.select(&record_selector) {
+        // スコアがない=未プレイ
+        if let Some(score_element) = record_element.select(&score_selector).next() {
+            let score = score_element
+                .text()
+                .next()
+                .context("The score element has no contents.")?;
+
+            let name = record_element
+                .select(&name_selector)
+                .next()
+                .context("There is no music name.")?
+                .text()
+                .next()
+                .context("The name element has no contents.")?;
+
+            println!("{name}: {score}");
+        }
+    }
+
+    Ok(())
 }
 
 #[tokio::main]
@@ -142,8 +168,7 @@ async fn main() -> Result<()> {
         .await
         .context("Failed to select aime.")?;
 
-    let master_page = get_record_page(&client, 3).await?;
-    println!("{master_page}");
+    get_record_page(&client, 3).await?;
 
     Ok(())
 }
