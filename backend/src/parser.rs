@@ -5,7 +5,6 @@ pub fn select_some_element<'a>(
     element: &'a ElementRef,
     selector_str: &str,
 ) -> Result<Option<ElementRef<'a>>> {
-    // select
     let selector = Selector::parse(selector_str)
         .map_err(|_| anyhow!("failed to parse the selector {}", selector_str))?;
     let mut select = element.select(&selector);
@@ -18,4 +17,14 @@ pub fn select_first_element<'a>(
 ) -> Result<ElementRef<'a>> {
     select_some_element(element, selector_str)?
         .ok_or(anyhow!("there is no element selected by {}", selector_str))
+}
+
+pub fn select_all_elements<'a>(
+    element: &'a ElementRef,
+    selector_str: &str,
+) -> Result<Vec<ElementRef<'a>>> {
+    let selector = Selector::parse(selector_str)
+        .map_err(|_| anyhow!("failed to parse the selector {}", selector_str))?;
+    let select = element.select(&selector);
+    Ok(select.collect())
 }
