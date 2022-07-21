@@ -36,3 +36,11 @@ pub fn get_attr(element: &ElementRef, attr: &str) -> Result<String> {
         .ok_or(anyhow!("there is no attribute {}", attr))
         .map(|str| str.to_string())
 }
+
+pub fn get_text(element: &ElementRef) -> Result<String> {
+    element
+        .text()
+        .next()
+        .ok_or(anyhow!("there is no text"))
+        .map(|str| str.to_string())
+}
