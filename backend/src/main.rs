@@ -1,17 +1,13 @@
 mod crawler;
 
 use anyhow::{ensure, Context, Result};
+use crawler::get_request;
 use reqwest::{Client, ClientBuilder};
 use scraper::{Html, Selector};
 use std::env;
 
 async fn get_login_token(client: &Client) -> Result<String> {
-    let login_page = client
-        .get("https://maimaidx.jp/maimai-mobile/")
-        .send()
-        .await?
-        .text()
-        .await?;
+    let login_page = get_request(client, "https://maimaidx.jp/maimai-mobile/", None::<&()>).await?;
 
     // トークンを抽出
     let document = Html::parse_document(&login_page);
@@ -66,16 +62,15 @@ async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str)
 
 async fn select_aime(client: &Client, idx: i32) -> Result<()> {
     let params = [("idx", idx)];
-    let response = client
-        .get("https://maimaidx.jp/maimai-mobile/aimeList/submit/")
-        .query(&params)
-        .send()
-        .await?
-        .text()
+    let after_aime_page = get_request(
+        client,
+        "https://maimaidx.jp/maimai-mobile/aimeList/submit/",
+        Some(&params),
+    )
         .await?;
 
     // タイトルを抽出
-    let document = Html::parse_document(&response);
+    let document = Html::parse_document(&after_aime_page);
     let title_selector = Selector::parse("title").unwrap();
     let title_element = document
         .select(&title_selector)
@@ -97,16 +92,15 @@ async fn select_aime(client: &Client, idx: i32) -> Result<()> {
 
 async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
     let params = [("genre", 99), ("diff", difficulty)];
-    let response = client
-        .get("https://maimaidx.jp/maimai-mobile/record/musicGenre/search/")
-        .query(&params)
-        .send()
-        .await?
-        .text()
-        .await?;
+    let record_page = get_request(
+        client,
+        "https://maimaidx.jp/maimai-mobile/record/musicGenre/search/",
+        Some(&params),
+    )
+    .await?;
 
     // タイトルを抽出
-    let document = Html::parse_document(&response);
+    let document = Html::parse_document(&record_page);
     let title_selector = Selector::parse("title").unwrap();
     let title_element = document
         .select(&title_selector)
