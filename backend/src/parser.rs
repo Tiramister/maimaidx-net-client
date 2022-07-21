@@ -28,3 +28,11 @@ pub fn select_all_elements<'a>(
     let select = element.select(&selector);
     Ok(select.collect())
 }
+
+pub fn get_attr(element: &ElementRef, attr: &str) -> Result<String> {
+    element
+        .value()
+        .attr(attr)
+        .ok_or(anyhow!("there is no attribute {}", attr))
+        .map(|str| str.to_string())
+}
