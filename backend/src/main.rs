@@ -9,7 +9,7 @@ use reqwest::{Client, ClientBuilder};
 use scraper::Html;
 use std::env;
 
-use crate::parser::get_attr;
+use crate::parser::{get_attr, get_text};
 
 const ROOT_URL: &'static str = "https://maimaidx.jp/maimai-mobile/";
 
@@ -39,10 +39,7 @@ async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str)
     let html_element = html_document.root_element();
 
     let title_element = select_first_element(&html_element, "title")?;
-    let title = title_element
-        .text()
-        .next()
-        .context("The element has no contents.")?;
+    let title = get_text(&title_element)?;
 
     // Aime 画面であれば OK
     ensure!(
@@ -62,10 +59,7 @@ async fn select_aime(client: &Client, idx: i32) -> Result<()> {
     let html_element = html_document.root_element();
 
     let title_element = select_first_element(&html_element, "title")?;
-    let title = title_element
-        .text()
-        .next()
-        .context("The element has no contents.")?;
+    let title = get_text(&title_element)?;
 
     // ホーム画面であれば OK
     ensure!(
@@ -85,10 +79,7 @@ async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
     let html_element = html_document.root_element();
 
     let title_element = select_first_element(&html_element, "title")?;
-    let title = title_element
-        .text()
-        .next()
-        .context("The element has no contents.")?;
+    let title = get_text(&title_element)?;
 
     // レコード画面であれば OK
     ensure!(
@@ -104,15 +95,10 @@ async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
     for record_element in select_all_elements(&html_element, RECORD_SELECTOR)? {
         // スコアがない=未プレイ
         if let Some(score_element) = select_some_element(&record_element, SCORE_SELECTOR)? {
-            let score = score_element
-                .text()
-                .next()
-                .context("The score element has no contents.")?;
+            let score = get_text(&score_element)?;
 
-            let name = select_first_element(&record_element, NAME_SELECTOR)?
-                .text()
-                .next()
-                .context("The name element has no contents.")?;
+            let name_element = select_first_element(&record_element, NAME_SELECTOR)?;
+            let name = get_text(&name_element)?;
 
             println!("{name}: {score}");
         }
