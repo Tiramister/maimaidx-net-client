@@ -2,12 +2,14 @@ mod crawler;
 mod parser;
 
 use anyhow::{ensure, Context, Result};
-use const_format::concatcp;
+use const_format::{concatcp, formatcp};
 use crawler::{get_request, post_request};
 use parser::{select_first_element, select_some_element};
 use reqwest::{Client, ClientBuilder};
-use scraper::{Html, Selector};
+use scraper::Html;
 use std::env;
+
+use crate::parser::select_all_elements;
 
 const ROOT_URL: &'static str = "https://maimaidx.jp/maimai-mobile/";
 
@@ -98,9 +100,9 @@ async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
     );
 
     const ACTION_URL: &'static str = concatcp!(ROOT_URL, "record/musicDetail/");
-    let record_selector = Selector::parse(&format!("form[action='{ACTION_URL}']")).unwrap();
+    const RECORD_SELECTOR: &'static str = formatcp!("form[action='{ACTION_URL}']");
 
-    for record_element in html_document.select(&record_selector) {
+    for record_element in select_all_elements(&html_element, RECORD_SELECTOR)? {
         // スコアがない=未プレイ
         if let Some(score_element) = select_some_element(&record_element, "div.music_score_block")?
         {
