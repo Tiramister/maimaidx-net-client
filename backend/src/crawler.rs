@@ -14,3 +14,14 @@ where
     Ok(request_builder.send().await?.text().await?)
 }
 
+pub async fn post_request<T>(client: &Client, url: &str, params_opt: Option<&T>) -> Result<String>
+where
+    T: Serialize + ?Sized,
+{
+    let request_builder = if let Some(params) = params_opt {
+        client.post(url).form(params)
+    } else {
+        client.post(url)
+    };
+    Ok(request_builder.send().await?.text().await?)
+}
