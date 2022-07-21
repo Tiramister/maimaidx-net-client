@@ -1,13 +1,17 @@
 mod crawler;
 
 use anyhow::{ensure, Context, Result};
+use const_format::concatcp;
 use crawler::{get_request, post_request};
 use reqwest::{Client, ClientBuilder};
 use scraper::{Html, Selector};
 use std::env;
 
+const ROOT_URL: &'static str = "https://maimaidx.jp/maimai-mobile/";
+
 async fn get_login_token(client: &Client) -> Result<String> {
-    let login_page = get_request(client, "https://maimaidx.jp/maimai-mobile/", None::<&()>).await?;
+    const URL: &'static str = ROOT_URL;
+    let login_page = get_request(client, URL, None::<&()>).await?;
 
     // トークンを抽出
     let document = Html::parse_document(&login_page);
@@ -25,18 +29,14 @@ async fn get_login_token(client: &Client) -> Result<String> {
 }
 
 async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str) -> Result<()> {
+    const URL: &str = concatcp!(ROOT_URL, "submit/");
     let params = [
         ("segaId", sega_id),
         ("password", sega_password),
         ("save_cookie", "on"),
         ("token", token),
     ];
-    let after_login_page = post_request(
-        client,
-        "https://maimaidx.jp/maimai-mobile/submit/",
-        Some(&params),
-    )
-    .await?;
+    let after_login_page = post_request(client, URL, Some(&params)).await?;
 
     // タイトルを抽出
     let document = Html::parse_document(&after_login_page);
@@ -60,13 +60,9 @@ async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str)
 }
 
 async fn select_aime(client: &Client, idx: i32) -> Result<()> {
+    const URL: &'static str = concatcp!(ROOT_URL, "aimeList/submit/");
     let params = [("idx", idx)];
-    let after_aime_page = get_request(
-        client,
-        "https://maimaidx.jp/maimai-mobile/aimeList/submit/",
-        Some(&params),
-    )
-    .await?;
+    let after_aime_page = get_request(client, URL, Some(&params)).await?;
 
     // タイトルを抽出
     let document = Html::parse_document(&after_aime_page);
@@ -90,13 +86,9 @@ async fn select_aime(client: &Client, idx: i32) -> Result<()> {
 }
 
 async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
+    const URL: &'static str = concatcp!(ROOT_URL, "record/musicGenre/search/");
     let params = [("genre", 99), ("diff", difficulty)];
-    let record_page = get_request(
-        client,
-        "https://maimaidx.jp/maimai-mobile/record/musicGenre/search/",
-        Some(&params),
-    )
-    .await?;
+    let record_page = get_request(client, URL, Some(&params)).await?;
 
     // タイトルを抽出
     let document = Html::parse_document(&record_page);
@@ -116,9 +108,8 @@ async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
         format!("Response is not the home page, but {}.", title)
     );
 
-    let record_selector =
-        Selector::parse("form[action='https://maimaidx.jp/maimai-mobile/record/musicDetail/']")
-            .unwrap();
+    const ACTION_URL: &'static str = concatcp!(ROOT_URL, "record/musicDetail/");
+    let record_selector = Selector::parse(&format!("form[action='{ACTION_URL}']")).unwrap();
     let name_selector = Selector::parse("div.music_name_block").unwrap();
     let score_selector = Selector::parse("div.music_score_block").unwrap();
 
