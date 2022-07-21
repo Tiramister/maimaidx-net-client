@@ -4,12 +4,10 @@ mod parser;
 use anyhow::{ensure, Context, Result};
 use const_format::{concatcp, formatcp};
 use crawler::{get_request, post_request};
-use parser::{select_first_element, select_some_element};
+use parser::{select_all_elements, select_first_element, select_some_element};
 use reqwest::{Client, ClientBuilder};
 use scraper::Html;
 use std::env;
-
-use crate::parser::select_all_elements;
 
 const ROOT_URL: &'static str = "https://maimaidx.jp/maimai-mobile/";
 
