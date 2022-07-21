@@ -4,12 +4,10 @@ mod parser;
 use anyhow::{ensure, Context, Result};
 use const_format::{concatcp, formatcp};
 use crawler::{get_request, post_request};
-use parser::{select_all_elements, select_first_element, select_some_element};
+use parser::ExtendedElementRef as _;
 use reqwest::{Client, ClientBuilder};
 use scraper::Html;
 use std::env;
-
-use crate::parser::{get_attr, get_text};
 
 const ROOT_URL: &'static str = "https://maimaidx.jp/maimai-mobile/";
 
@@ -17,12 +15,11 @@ async fn get_login_token(client: &Client) -> Result<String> {
     const URL: &'static str = ROOT_URL;
     let login_page = get_request(client, URL, None::<&()>).await?;
 
-    let html_document = Html::parse_document(&login_page);
-    let html_element = html_document.root_element();
-
     const TOKEN_SELECTOR: &'static str = "input[name='token']";
-    let token_element = select_first_element(&html_element, TOKEN_SELECTOR)?;
-    get_attr(&token_element, "value")
+    Html::parse_document(&login_page)
+        .root_element()
+        .select_first_element(TOKEN_SELECTOR)?
+        .get_attr("value")
 }
 
 async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str) -> Result<()> {
@@ -35,13 +32,11 @@ async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str)
     ];
     let after_login_page = post_request(client, URL, Some(&params)).await?;
 
-    let html_document = Html::parse_document(&after_login_page);
-    let html_element = html_document.root_element();
-
-    let title_element = select_first_element(&html_element, "title")?;
-    let title = get_text(&title_element)?;
-
-    // Aime 画面であれば OK
+    // タイトルチェック
+    let title = Html::parse_document(&after_login_page)
+        .root_element()
+        .select_first_element("title")?
+        .get_text()?;
     ensure!(
         title.contains("Aime"),
         format!("Response is not the Aime select page, but {}.", title)
@@ -55,13 +50,11 @@ async fn select_aime(client: &Client, idx: i32) -> Result<()> {
     let params = [("idx", idx)];
     let after_aime_page = get_request(client, URL, Some(&params)).await?;
 
-    let html_document = Html::parse_document(&after_aime_page);
-    let html_element = html_document.root_element();
-
-    let title_element = select_first_element(&html_element, "title")?;
-    let title = get_text(&title_element)?;
-
-    // ホーム画面であれば OK
+    // タイトルチェック
+    let title = Html::parse_document(&after_aime_page)
+        .root_element()
+        .select_first_element("title")?
+        .get_text()?;
     ensure!(
         title.contains("ホーム"),
         format!("Response is not the home page, but {}.", title)
@@ -78,10 +71,8 @@ async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
     let html_document = Html::parse_document(&record_page);
     let html_element = html_document.root_element();
 
-    let title_element = select_first_element(&html_element, "title")?;
-    let title = get_text(&title_element)?;
-
-    // レコード画面であれば OK
+    // タイトルチェック
+    let title = html_element.select_first_element("title")?.get_text()?;
     ensure!(
         title.contains("楽曲スコア"),
         format!("Response is not the home page, but {}.", title)
@@ -92,18 +83,16 @@ async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
     const SCORE_SELECTOR: &'static str = "div.music_score_block";
     const NAME_SELECTOR: &'static str = "div.music_name_block";
 
-    for record_element in select_all_elements(&html_element, RECORD_SELECTOR)? {
+    for record_element in html_element.select_all_elements(RECORD_SELECTOR)? {
         // スコアがない=未プレイ
-        if let Some(score_element) = select_some_element(&record_element, SCORE_SELECTOR)? {
-            let score = get_text(&score_element)?;
-
-            let name_element = select_first_element(&record_element, NAME_SELECTOR)?;
-            let name = get_text(&name_element)?;
-
+        if let Some(score_element) = record_element.select_some_element(SCORE_SELECTOR)? {
+            let score = score_element.get_text()?;
+            let name = record_element
+                .select_first_element(NAME_SELECTOR)?
+                .get_text()?;
             println!("{name}: {score}");
         }
     }
-
     Ok(())
 }
 
