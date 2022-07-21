@@ -9,6 +9,8 @@ use reqwest::{Client, ClientBuilder};
 use scraper::Html;
 use std::env;
 
+use crate::parser::get_attr;
+
 const ROOT_URL: &'static str = "https://maimaidx.jp/maimai-mobile/";
 
 async fn get_login_token(client: &Client) -> Result<String> {
@@ -20,11 +22,7 @@ async fn get_login_token(client: &Client) -> Result<String> {
 
     const TOKEN_SELECTOR: &'static str = "input[name='token']";
     let token_element = select_first_element(&html_element, TOKEN_SELECTOR)?;
-    let token = token_element
-        .value()
-        .attr("value")
-        .context("The token element has no attribute 'value'.")?;
-    Ok(token.to_string())
+    get_attr(&token_element, "value")
 }
 
 async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str) -> Result<()> {
