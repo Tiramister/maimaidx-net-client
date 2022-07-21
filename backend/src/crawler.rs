@@ -1,6 +1,14 @@
+use std::time::Duration;
+
 use anyhow::Result;
 use reqwest::Client;
 use serde::Serialize;
+use tokio::time::sleep;
+
+/** 連続リクエスト回避 */
+async fn sleep_shortly() {
+    sleep(Duration::from_secs(1)).await;
+}
 
 pub async fn get_request<T>(client: &Client, url: &str, params_opt: Option<&T>) -> Result<String>
 where
@@ -11,7 +19,11 @@ where
     } else {
         client.get(url)
     };
-    Ok(request_builder.send().await?.text().await?)
+    let response = request_builder.send().await?.text().await?;
+
+    sleep_shortly().await;
+
+    Ok(response)
 }
 
 pub async fn post_request<T>(client: &Client, url: &str, params_opt: Option<&T>) -> Result<String>
@@ -23,5 +35,9 @@ where
     } else {
         client.post(url)
     };
-    Ok(request_builder.send().await?.text().await?)
+    let response = request_builder.send().await?.text().await?;
+
+    sleep_shortly().await;
+
+    Ok(response)
 }
