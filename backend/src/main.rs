@@ -1,3 +1,5 @@
+mod crawler;
+
 use anyhow::{ensure, Context, Result};
 use reqwest::{Client, ClientBuilder};
 use scraper::{Html, Selector};
