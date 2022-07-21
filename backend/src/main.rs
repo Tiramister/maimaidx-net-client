@@ -20,7 +20,8 @@ async fn get_login_token(client: &Client) -> Result<String> {
     let html_document = Html::parse_document(&login_page);
     let html_element = html_document.root_element();
 
-    let token_element = select_first_element(&html_element, "input[name='token']")?;
+    const TOKEN_SELECTOR: &'static str = "input[name='token']";
+    let token_element = select_first_element(&html_element, TOKEN_SELECTOR)?;
     let token = token_element
         .value()
         .attr("value")
@@ -101,17 +102,18 @@ async fn get_record_page(client: &Client, difficulty: i32) -> Result<()> {
 
     const ACTION_URL: &'static str = concatcp!(ROOT_URL, "record/musicDetail/");
     const RECORD_SELECTOR: &'static str = formatcp!("form[action='{ACTION_URL}']");
+    const SCORE_SELECTOR: &'static str = "div.music_score_block";
+    const NAME_SELECTOR: &'static str = "div.music_name_block";
 
     for record_element in select_all_elements(&html_element, RECORD_SELECTOR)? {
         // スコアがない=未プレイ
-        if let Some(score_element) = select_some_element(&record_element, "div.music_score_block")?
-        {
+        if let Some(score_element) = select_some_element(&record_element, SCORE_SELECTOR)? {
             let score = score_element
                 .text()
                 .next()
                 .context("The score element has no contents.")?;
 
-            let name = select_first_element(&record_element, "div.music_name_block")?
+            let name = select_first_element(&record_element, NAME_SELECTOR)?
                 .text()
                 .next()
                 .context("The name element has no contents.")?;
