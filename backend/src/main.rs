@@ -6,6 +6,8 @@ use reqwest::{Client, ClientBuilder};
 use scraper::{Html, Selector};
 use std::env;
 
+use crate::crawler::post_request;
+
 async fn get_login_token(client: &Client) -> Result<String> {
     let login_page = get_request(client, "https://maimaidx.jp/maimai-mobile/", None::<&()>).await?;
 
@@ -31,16 +33,15 @@ async fn login(client: &Client, sega_id: &str, sega_password: &str, token: &str)
         ("save_cookie", "on"),
         ("token", token),
     ];
-    let response = client
-        .post("https://maimaidx.jp/maimai-mobile/submit/")
-        .form(&params)
-        .send()
-        .await?
-        .text()
-        .await?;
+    let after_login_page = post_request(
+        client,
+        "https://maimaidx.jp/maimai-mobile/submit/",
+        Some(&params),
+    )
+    .await?;
 
     // タイトルを抽出
-    let document = Html::parse_document(&response);
+    let document = Html::parse_document(&after_login_page);
     let title_selector = Selector::parse("title").unwrap();
     let title_element = document
         .select(&title_selector)
@@ -67,7 +68,7 @@ async fn select_aime(client: &Client, idx: i32) -> Result<()> {
         "https://maimaidx.jp/maimai-mobile/aimeList/submit/",
         Some(&params),
     )
-        .await?;
+    .await?;
 
     // タイトルを抽出
     let document = Html::parse_document(&after_aime_page);
