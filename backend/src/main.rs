@@ -1,12 +1,10 @@
 mod crawler;
 
 use anyhow::{ensure, Context, Result};
-use crawler::get_request;
+use crawler::{get_request, post_request};
 use reqwest::{Client, ClientBuilder};
 use scraper::{Html, Selector};
 use std::env;
-
-use crate::crawler::post_request;
 
 async fn get_login_token(client: &Client) -> Result<String> {
     let login_page = get_request(client, "https://maimaidx.jp/maimai-mobile/", None::<&()>).await?;
